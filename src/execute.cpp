@@ -30,6 +30,16 @@ int main() {
             command.push_back(buffer);
         }
 
+        // Simplify vector
+
+        // Need to combine terms that are part of a single set of quotation marks
+        // Need to merge "<" with next term
+        cout << "START VECTOR\n\n";
+        for (int i = 0; i < command.size(); i++) {
+            cout << command[i] << "\n";
+        }
+        cout << "\nEND VECTOR\n\n";
+
         // Basic Cases
 
         if (command.size() != 0) { // Make sure it's not an empty command (EDGE CASE)
