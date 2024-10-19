@@ -6,6 +6,6 @@ int main() {
         string input_string;
         cout << "[QUASH] $ ";
         cin >> input_string;
-        cout << input_string;
+        cout << input_string << "\n";
     }
 }
