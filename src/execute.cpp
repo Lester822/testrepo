@@ -43,18 +43,15 @@ void cd_command(const vector<string>& args) {
         const char* path = args[1].c_str();
 
         if (chdir(path) != 0) {
-            cout << "cd to " << path << " failed\n"; // Handle error locations
+            cout << "cd to" << path << " failed"; // Handle error locations
+        }
+        else {
+            if (chdir(home) != 0) {
+                cout << "cd failed to change to home"; // Handle error locations
+            }
         }
     }
-    else if (home != nullptr) {
-        if (chdir(home) != 0) {
-            cout << "cd failed to change to home\n"; // Handle error locations
-        }
-    }
-    else {
-        cout << "cd: Home envirement variable not set\n";
-    }
-
+    // Need an update to PWD?
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != nullptr) {
         setenv("PWD", cwd, 1);
@@ -65,7 +62,7 @@ void cd_command(const vector<string>& args) {
 }
 
 int main() {
-    cout << "Welcome...\n";
+    cout << "Welcome...";
     while (1) {
 
         // Get user input
@@ -181,30 +178,32 @@ int main() {
                 } else if (commands[j][0] == "quit" || command[0] == "exit") {
                     quexit_command();
                 } else if (commands[j][0] == "jobs") {
+                    
+                } else {
+                    pid_t pid = fork();
+                    if (pid == 0) {
+                        vector<char*> args;
 
+                        for (int i = 0; i < commands[j].size()-1; i++) {
+                            args.push_back(const_cast<char*>(commands[j][i].c_str()));
+                        }
+                        args.push_back(nullptr);
+
+                        execvp(args[0], args.data());
+                    } else {
+                        waitpid(pid, nullptr, 0);
+                    }
+                    if (last_elem == ">" || last_elem == ">>") {
+                        cout.rdbuf(og_output); // Restores cout to terminal
+                        fileOut.close();
+                    }
                 }
 
                 // Execution Mode
 
                 // Fork this process
                 // Run execute command to replace it with what we want, passing in arguments with it
-                pid_t pid = fork();
-                if (pid == 0) {
-                    vector<char*> args;
 
-                    for (int i = 0; i < commands[j].size()-1; i++) {
-                        args.push_back(const_cast<char*>(commands[j][i].c_str()));
-                    }
-                    args.push_back(nullptr);
-
-                    execvp(args[0], args.data());
-                } else {
-                    waitpid(pid, nullptr, 0);
-                }
-                if (last_elem == ">" || last_elem == ">>") {
-                    cout.rdbuf(og_output); // Restores cout to terminal
-                    fileOut.close();
-                }
 
                 if (last_elem != "|") {
                     break;
