@@ -248,7 +248,8 @@ int main() {
                         args.push_back(nullptr); // Adds nullptr to back as needed
 
                         if (has_and == 1) {
-                            setpgid(0, 0);
+                            pid_t child_pid = getpid();
+                            setpgid(child_pid, child_pid);
 
                             int stopoutput = open("/dev/null", O_RDONLY);
                             dup2(stopoutput, STDIN_FILENO);
@@ -265,6 +266,8 @@ int main() {
                             }
                         } else {
                             cout << "Process running in background with PID: " << pid << endl;
+                            setpgid(pid, pid); // Ensure child is in its own process group
+                            tcsetpgrp(STDIN_FILENO, getpgrp()); // Set shell as foreground process group
                             if (output_fd != -1) {
                                 close(output_fd);
                             }
