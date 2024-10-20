@@ -10,8 +10,12 @@ string check_string(string input) {
     return input;
 }
 
-
-
+void echo_command(const vector<string> &args) {
+    for (int i = 0; i < args.size() - 1; i++) {
+        cout << args[i] << " ";
+    }
+    cout << args[args.size() - 1] << "\n";
+}
 
 int main() {
     while (1) {
@@ -67,7 +71,7 @@ int main() {
             // QUASH Command Mode
 
             if (command[0] == "echo") {
-                // DO A THING
+                echo_command();
             } else if (command[0] == "export") {
                 // DO A DIFFERENT THING
             } else if (command[0] == "cd") {
