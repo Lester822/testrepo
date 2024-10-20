@@ -249,11 +249,18 @@ int main() {
 
                         if (has_and == 1) {
                             pid_t child_pid = getpid();
-                            setpgid(child_pid, child_pid);
+                            setpgid(child_pid, child_pid); // Set child in its own process group
 
-                            int stopoutput = open("/dev/null", O_RDONLY);
-                            dup2(stopoutput, STDIN_FILENO);
-                            close(stopoutput);
+                            // Redirect stdin to /dev/null
+                            int devNullIn = open("/dev/null", O_RDONLY);
+                            dup2(devNullIn, STDIN_FILENO);
+                            close(devNullIn);
+
+                            // Redirect stdout and stderr to /dev/null
+                            int devNullOut = open("/dev/null", O_WRONLY);
+                            dup2(devNullOut, STDOUT_FILENO);
+                            dup2(devNullOut, STDERR_FILENO);
+                            close(devNullOut);
                         }
 
                         execvp(args[0], args.data()); // Replaces current program with execvp
