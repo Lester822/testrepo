@@ -25,7 +25,8 @@ void quexit_command() {
 }
 
 void pwd_command() {
-    char* cwd = get_current_dir_name();
+    // char* cwd = get_current_dir_name();
+    char* cwd;
     if (cwd != nullptr) {
         cout << cwd << endl;
         free(cwd);
@@ -117,14 +118,15 @@ int main() {
             if (commands[j].size() != 0) { // Make sure it's not an empty command (EDGE CASE)
                 
                 string last_elem = commands[j][commands[j].size()-1] ;
-
+                ofstream fileOut;
+                streambuf* og_output = cout.rdbuf(); // Stores original cout (to terminal)
                 // If last elem is a "" it means standard operation, and final command
                 // If last elem is a | it means the output should be piped
                 // If last elem is a > it means output should go to file stored in commands[j+1]
                 // If last elem is a >> it means output should be appended to file stored in commands[j+1]
                 cout << last_elem;
                 if (last_elem == ">") {
-                    ofstream fileOut(commands[j+1][0]);
+                    fileOut.open(commands[j+1][0]);
                     // Redirecting cout to write to "output.txt"
                     cout.rdbuf(fileOut.rdbuf());
                 }
@@ -132,7 +134,8 @@ int main() {
                 // QUASH Command Mode
 
                 if (commands[j][0] == "echo") {
-                    echo_command(commands[j]);
+                    vector<string> temp_v(commands[j].begin() + 1, commands[j].end() - 1);
+                    echo_command(temp_v);
                 } else if (commands[j][0] == "export") {
                     // DO A DIFFERENT THING
                 } else if (commands[j][0] == "cd") {
@@ -152,6 +155,10 @@ int main() {
 
                 // Fork this process
                 // Run execute command to replace it with what we want, passing in arguments with it
+                if (last_elem == ">") {
+                    cout.rdbuf(og_output); // Restores cout to terminal
+                    fileOut.close();
+                }
 
                 if (last_elem != "|") {
                     break;
