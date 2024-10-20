@@ -187,7 +187,11 @@ int main() {
                             args.push_back(const_cast<char*>(commands[j][i].c_str()));
                         }
                         args.push_back(nullptr);
-
+                        if (last_elem == ">") {
+                            fileOut.open(commands[j+1][0]);
+                            // Redirecting cout to write to "output.txt"
+                            cout.rdbuf(fileOut.rdbuf());
+                        }
                         execvp(args[0], args.data());
                     } else {
                         waitpid(pid, nullptr, 0);
