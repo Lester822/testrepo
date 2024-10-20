@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 using namespace std;
 
 string check_string(string input) {
@@ -180,7 +181,27 @@ int main() {
                 } else if (commands[j][0] == "jobs") {
                     
                 } else {
+
+                    // SOLUTION FOR ">" and ">>" for these commands
+
+                    ofstream fileOut;
+                    streambuf* og_output = cout.rdbuf(); // For restoring back to term
+                    int output_fd = -1; // -1 indicates NO file output
+
+                    if (last_elem == ">") {
+                        output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
+                    } else if (last_elem == ">>") {
+                        output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
+                    }
+
                     pid_t pid = fork();
+
+                    if (output_fd != -1) {
+                        // Redirect stdout to the file
+                        dup2(output_fd, STDOUT_FILENO);
+                        close(output_fd);
+                    }
+
                     if (pid == 0) {
                         vector<char*> args;
 
@@ -188,11 +209,6 @@ int main() {
                             args.push_back(const_cast<char*>(commands[j][i].c_str()));
                         }
                         args.push_back(nullptr);
-                        if (last_elem == ">") {
-                            fileOut.open(commands[j+1][0]);
-                            // Redirecting cout to write to "output.txt"
-                            cout.rdbuf(fileOut.rdbuf());
-                        }
                         execvp(args[0], args.data());
                     } else {
                         waitpid(pid, nullptr, 0);
