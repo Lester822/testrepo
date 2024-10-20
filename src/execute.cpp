@@ -222,7 +222,7 @@ int main() {
                     pid_t pid = fork(); // Fork process so that we can execvp the child
 
                     int has_and = 0;
-                    if (commands[j].size() > 2) {
+                    if (commands[j].size() >= 2) {
                         if (commands.back() == vector<string>{"&"}) {
                             has_and = 1;
                         }
