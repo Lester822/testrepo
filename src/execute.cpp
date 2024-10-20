@@ -193,6 +193,8 @@ int main() {
                     args.push_back(nullptr);
 
                     execvp(args[0], args.data());
+                } else {
+                    waitpid(pid, nullptr, 0);
                 }
                 if (last_elem == ">" || last_elem == ">>") {
                     cout.rdbuf(og_output); // Restores cout to terminal
