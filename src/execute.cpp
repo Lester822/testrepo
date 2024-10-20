@@ -6,6 +6,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 using namespace std;
 
 string check_string(string input) {
@@ -54,7 +55,7 @@ void cd_command(const vector<string>& args) {
     }
 
     char cwd[1024];
-    if (getcwd(cwd, size(cwd)) != nullptr) {
+    if (getcwd(cwd, sizeof(cwd)) != nullptr) {
         setenv("PWD", cwd, 1);
     }
     else {
@@ -184,11 +185,21 @@ int main() {
 
                 // Execution Mode
 
-                // Calculate path
-                string path;
-
                 // Fork this process
                 // Run execute command to replace it with what we want, passing in arguments with it
+                pid_t pid = fork();
+                if (pid == 0) {
+                    vector<char*> args;
+
+                    for (int i = 0; i < commands[j].size()-1; i++) {
+                        args.push_back(const_cast<char*>(commands[j][i].c_str()));
+                    }
+                    args.push_back(nullptr);
+
+                    execvp(args[0], args.data());
+                } else {
+                    waitpid(pid, nullptr, 0);
+                }
                 if (last_elem == ">" || last_elem == ">>") {
                     cout.rdbuf(og_output); // Restores cout to terminal
                     fileOut.close();
