@@ -123,7 +123,6 @@ int main() {
                 // If last elem is a | it means the output should be piped
                 // If last elem is a > it means output should go to file stored in commands[j+1]
                 // If last elem is a >> it means output should be appended to file stored in commands[j+1]
-                cout << last_elem;
 
                 if (last_elem == ">") {
                     fileOut.open(commands[j+1][0]);
