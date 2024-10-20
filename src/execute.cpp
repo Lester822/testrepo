@@ -223,7 +223,7 @@ int main() {
 
                     int has_and = 0;
                     if (commands[j].size() >= 2) {
-                        if (commands.back() == vector<string>{"&"}) {
+                        if (commands.back()[0] == "&") {
                             has_and = 1;
                         }
                     }
