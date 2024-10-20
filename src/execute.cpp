@@ -267,10 +267,11 @@ int main() {
                                 close(output_fd);
                             }
                         } else {
-                            cout << "Process running in background with PID: " << pid << endl;
                             if (output_fd != -1) {
                                 close(output_fd);
                             }
+                            cout << "Process running in background with PID: " << pid << endl;
+                            
                         }
                     }
 
