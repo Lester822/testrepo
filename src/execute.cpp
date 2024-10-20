@@ -13,7 +13,7 @@ string check_string(string input) {
     return input;
 }
 
-void echo_command(const vector<string> &args) {
+void echo_command(const vector<string>& args) {
     for (int i = 0; i < args.size() - 1; i++) {
         cout << args[i] << " ";
     }
@@ -31,6 +31,25 @@ void pwd_command() {
         free(cwd);
     }
     // Potential error handling location
+}
+
+void cd_command(const vector<string>& args) {
+    const char* home = getenv("HOME");
+
+    // If the number of args provided are more than 1 (not just cd )
+    if (args.size() > 1) {
+        const char* path = args[1].c_str();
+
+        if (chdir(path) != 0) {
+            cout << "cd failed";
+        }
+        else {
+            if (chdir(home) != 0) {
+                cout << "cd failed to change to home";
+            }
+        }
+    }
+    // Need an update to PWD?
 }
 
 int main() {
