@@ -52,7 +52,7 @@ void cd_command(const vector<string>& args) {
     }
     // Need an update to PWD?
     char cwd[1024];
-    if (getcwd(cwd, size(cwd)) != nullptr) {
+    if (getcwd(cwd, sizeof(cwd)) != nullptr) {
         setenv("PWD", cwd, 1);
     }
     else {
