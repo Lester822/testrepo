@@ -185,7 +185,6 @@ int main() {
                     // SOLUTION FOR ">" and ">>" for these commands
 
                     ofstream fileOut;
-                    streambuf* og_output = cout.rdbuf(); // For restoring back to term
                     int output_fd = -1; // -1 indicates NO file output
 
                     if (last_elem == ">") {
@@ -196,13 +195,14 @@ int main() {
 
                     pid_t pid = fork();
 
-                    if (output_fd != -1) {
+                    if (pid == 0) {
+
+                        if (output_fd != -1) {
                         // Redirect stdout to the file
                         dup2(output_fd, STDOUT_FILENO);
                         close(output_fd);
-                    }
+                        }
 
-                    if (pid == 0) {
                         vector<char*> args;
 
                         for (int i = 0; i < commands[j].size()-1; i++) {
@@ -210,9 +210,14 @@ int main() {
                         }
                         args.push_back(nullptr);
                         execvp(args[0], args.data());
+
                     } else {
                         waitpid(pid, nullptr, 0);
+                        if (output_fd != -1) {
+                            close(output_fd);
+                        }
                     }
+
                     if (last_elem == ">" || last_elem == ">>") {
                         cout.rdbuf(og_output); // Restores cout to terminal
                         fileOut.close();
