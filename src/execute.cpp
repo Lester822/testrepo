@@ -123,7 +123,7 @@ int main() {
             } else if (command[0] == "cd") {
 
             } else if (command[0] == "pwd") {
-                
+                pwd_command();
             } else if (command[0] == "quit" || command[0] == "exit") {
                 quexit_command();
             } else if (command[0] == "jobs") {
