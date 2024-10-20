@@ -149,6 +149,12 @@ int main() {
                     cout.rdbuf(fileOut.rdbuf());
                 }
 
+                if (last_elem == ">>") {
+                    fileOut.open(commands[j+1][0], ios::app);
+                    // Redirecting cout to write to "output.txt"
+                    cout.rdbuf(fileOut.rdbuf());
+                }
+
                 // QUASH Command Mode
 
                 if (commands[j][0] == "echo") {
@@ -173,7 +179,7 @@ int main() {
 
                 // Fork this process
                 // Run execute command to replace it with what we want, passing in arguments with it
-                if (last_elem == ">") {
+                if (last_elem == ">" || last_elem == ">>") {
                     cout.rdbuf(og_output); // Restores cout to terminal
                     fileOut.close();
                 }
@@ -190,7 +196,7 @@ int main() {
 
 
             }
-            
+
         }
     }
 }
