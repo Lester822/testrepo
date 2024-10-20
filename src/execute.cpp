@@ -10,6 +10,18 @@
 #include <fcntl.h>
 using namespace std;
 
+// Helper functions:
+
+// Remove quotes:
+string remove_quotes(const string& str) {
+    // If the string has ""s remove them
+    if (str.front() == '"' && str.back() == '"') {
+        return str.substr(1, str.size() - 2);
+    }
+    // If the string doesn't have ""s we don't change it
+    return str;
+}
+
 string check_string(string input) {
     // Function that returns the input string, unless the string is a system variable that should be replaced
     return input;
@@ -32,38 +44,37 @@ void pwd_command() {
         cout << cwd << endl;
         free(cwd);
     } else {
-        cout << "getcwd failed\n";
+        cout << "getcwd failed" << endl;
     }
 }
 
 void cd_command(const vector<string>& args) {
     const char* home = getenv("HOME");
 
-    // If the number of args provided are more than 1 (not just cd )
     if (args.size() > 1) {
-        const char* path = args[1].c_str();
+        string path = remove_quotes(args[1]);
+        const char* dir = path.c_str();
 
-        if (chdir(path) != 0) {
-            cout << "cd to" << path << " failed"; // Handle error locations
+        if (chdir(dir) != 0) {
+            cout << "cd to " << path << " failed: " << endl;
         }
-        else {
-            if (chdir(home) != 0) {
-                cout << "cd failed to change to home"; // Handle error locations
-            }
+    } 
+    else {
+        if (chdir(home) != 0) {
+            cout << "cd failed to change to home: " << endl;
         }
     }
-    // Need an update to PWD?
+
     char cwd[1024];
     if (getcwd(cwd, sizeof(cwd)) != nullptr) {
         setenv("PWD", cwd, 1);
-    }
-    else {
-        cout << "failed to update PWD\n";
+    } else {
+        cout << "failed to update PWD: " << endl;
     }
 }
 
 int main() {
-    cout << "Welcome...";
+    cout << "Welcome..." << endl;
     while (1) {
 
         // Get user input
