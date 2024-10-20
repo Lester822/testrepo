@@ -41,15 +41,18 @@ void cd_command(const vector<string>& args) {
         const char* path = args[1].c_str();
 
         if (chdir(path) != 0) {
-            cout << "cd to" << path << " failed"; // Handle error locations
-        }
-        else {
-            if (chdir(home) != 0) {
-                cout << "cd failed to change to home"; // Handle error locations
-            }
+            cout << "cd to " << path << " failed\n"; // Handle error locations
         }
     }
-    // Need an update to PWD?
+    else if (home != nullptr) {
+        if (chdir(home) != 0) {
+            cout << "cd failed to change to home\n"; // Handle error locations
+        }
+    }
+    else {
+        cout << "cd: Home envirement variable not set\n";
+    }
+
     char cwd[1024];
     if (getcwd(cwd, size(cwd)) != nullptr) {
         setenv("PWD", cwd, 1);
@@ -60,7 +63,7 @@ void cd_command(const vector<string>& args) {
 }
 
 int main() {
-    cout << "Welcome...";
+    cout << "Welcome...\n";
     while (1) {
 
         // Get user input
@@ -176,7 +179,7 @@ int main() {
                 } else if (commands[j][0] == "quit" || command[0] == "exit") {
                     quexit_command();
                 } else if (commands[j][0] == "jobs") {
-                    
+
                 }
 
                 // Execution Mode
