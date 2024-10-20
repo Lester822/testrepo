@@ -29,8 +29,25 @@ int main() {
 
         istringstream stream(input_string);
 
+        string prev = "";
         while (getline(stream, buffer, ' ')) {
-            command.push_back(buffer);
+            if (prev == "") {
+                if (buffer[0] == '"') {
+                    prev = buffer;
+                } else {
+                    command.push_back(buffer);
+                }
+            } else {
+                prev = prev + " " + buffer;
+                if (buffer.back() == '"') {
+                    command.push_back(prev);
+                    prev = "";
+                }
+            }
+        }
+
+        if (prev != "") {
+            command.push_back(prev);
         }
 
         // Simplify vector
