@@ -30,8 +30,9 @@ void pwd_command() {
     if (cwd != nullptr) {
         cout << cwd << endl;
         free(cwd);
+    } else {
+        cout << "getcwd failed\n";
     }
-    // Potential error handling location
 }
 
 void cd_command(const vector<string>& args) {
@@ -59,7 +60,7 @@ void cd_command(const vector<string>& args) {
         setenv("PWD", cwd, 1);
     }
     else {
-        cout << "failed to update PWD";
+        cout << "failed to update PWD\n";
     }
 }
 
