@@ -3,6 +3,7 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <fstream>
 #include <unistd.h>
 #include <stdlib.h>
 using namespace std;
@@ -81,11 +82,11 @@ int main() {
         vector<vector<string>> commands;
         vector<string> temp_vector;
 
-        cout << "PRESPLIT VECTOR\n\n";
-        for (int i = 0; i < command.size(); i++) {
-            cout << command[i] << "\n";
-        }
-        cout << "\nPRESPLIT VECTOR\n\n";
+        // cout << "PRESPLIT VECTOR\n\n";
+        // for (int i = 0; i < command.size(); i++) {
+        //     cout << command[i] << "\n";
+        // }
+        // cout << "\nPRESPLIT VECTOR\n\n";
 
         for (int i = 0; i < command.size(); i++) {
             temp_vector.push_back(command[i]);
@@ -97,54 +98,78 @@ int main() {
         temp_vector.push_back("");
         commands.push_back(temp_vector);
 
-        cout << "COMMAND LIST START\n\n";
-        for (int j = 0; j < commands.size(); j++) {
-            cout << "START VECTOR\n\n";
-            for (int i = 0; i < commands[j].size(); i++) {
-                cout << commands[j][i] << "\n";
-            }
-            cout << "\nEND VECTOR\n\n";
-        }
-        cout << "COMMAND LIST END\n\n";
+        // cout << "COMMAND LIST START\n\n";
+        // for (int j = 0; j < commands.size(); j++) {
+        //     cout << "START VECTOR\n\n";
+        //     for (int i = 0; i < commands[j].size(); i++) {
+        //         cout << commands[j][i] << "\n";
+        //     }
+        //     cout << "\nEND VECTOR\n\n";
+        // }
+        // cout << "COMMAND LIST END\n\n";
         // Need to combine terms that are part of a single set of quotation marks
         // Need to merge "<" with next term
         
 
         // Basic Cases
+        for (int j = 0; j < commands.size(); j++) { // For each command
 
-        if (command.size() != 0) { // Make sure it's not an empty command (EDGE CASE)
-            
-            // QUASH Command Mode
+            if (commands[j].size() != 0) { // Make sure it's not an empty command (EDGE CASE)
+                
+                string last_elem = commands[j][commands[j].size()-1] ;
 
-            if (command[0] == "echo") {
-                //echo_command();
-            } else if (command[0] == "export") {
-                // DO A DIFFERENT THING
-            } else if (command[0] == "cd") {
+                // If last elem is a "" it means standard operation, and final command
+                // If last elem is a | it means the output should be piped
+                // If last elem is a > it means output should go to file stored in commands[j+1]
+                // If last elem is a >> it means output should be appended to file stored in commands[j+1]
+                cout << last_elem;
+                if (last_elem == ">") {
+                    ofstream fileOut(commands[j+1][0]);
+                    // Redirecting cout to write to "output.txt"
+                    cout.rdbuf(fileOut.rdbuf());
+                }
 
+                // QUASH Command Mode
+
+                if (commands[j][0] == "echo") {
+                    echo_command(commands[j]);
+                } else if (commands[j][0] == "export") {
+                    // DO A DIFFERENT THING
+                } else if (commands[j][0] == "cd") {
+
+                } else if (commands[j][0] == "pwd") {
+                    
+                } else if (commands[j][0] == "quit" || command[0] == "exit") {
+                    
+                } else if (commands[j][0] == "jobs") {
+                    
+                }
+
+                // Execution Mode
+
+                // Calculate path
+                string path;
+
+                // Fork this process
+                // Run execute command to replace it with what we want, passing in arguments with it
+                
             } else if (command[0] == "pwd") {
                 pwd_command();
             } else if (command[0] == "quit" || command[0] == "exit") {
                 quexit_command();
             } else if (command[0] == "jobs") {
                 
+                // Iterate through vector until we hit the end, a "|", or a ">"
+                // These indicate end of current command.
+                // If we hit the end of the vector then we just need to run the command and then return to QUASH
+                // If we hit a "|" we need to pipe the output
+                // If we hit a ">" we need to put the output in a file
+
+                if (last_elem != "|") {
+                    break;
+                }
+
             }
-
-            // Execution Mode
-
-            // Calculate path
-            string path;
-
-            // Fork this process
-            // Run execute command to replace it with what we want, passing in arguments with it
-            
-            // Iterate through vector until we hit the end, a "|", or a ">"
-            // These indicate end of current command.
-            // If we hit the end of the vector then we just need to run the command and then return to QUASH
-            // If we hit a "|" we need to pipe the output
-            // If we hit a ">" we need to put the output in a file
-
-
         }
 
 
