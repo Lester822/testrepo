@@ -60,15 +60,39 @@ int main() {
             command.push_back(prev);
         }
 
-        // Simplify vector
+        // Vector to Vector of Vectors
 
-        // Need to combine terms that are part of a single set of quotation marks
-        // Need to merge "<" with next term
-        cout << "START VECTOR\n\n";
+        vector<vector<string>> commands;
+        vector<string> temp_vector;
+
+        cout << "PRESPLIT VECTOR\n\n";
         for (int i = 0; i < command.size(); i++) {
             cout << command[i] << "\n";
         }
-        cout << "\nEND VECTOR\n\n";
+        cout << "\nPRESPLIT VECTOR\n\n";
+
+        for (int i = 0; i < command.size(); i++) {
+            temp_vector.push_back(command[i]);
+            if (command[i] == "|" || command[i] == ">" || command[i] == ">>") {
+                commands.push_back(temp_vector);
+                temp_vector.clear();
+            }
+        }
+        temp_vector.push_back("");
+        commands.push_back(temp_vector);
+
+        cout << "COMMAND LIST START\n\n";
+        for (int j = 0; j < commands.size(); j++) {
+            cout << "START VECTOR\n\n";
+            for (int i = 0; i < commands[j].size(); i++) {
+                cout << commands[j][i] << "\n";
+            }
+            cout << "\nEND VECTOR\n\n";
+        }
+        cout << "COMMAND LIST END\n\n";
+        // Need to combine terms that are part of a single set of quotation marks
+        // Need to merge "<" with next term
+        
 
         // Basic Cases
 
