@@ -26,7 +26,6 @@ void quexit_command() {
 
 void pwd_command() {
     char* cwd = get_current_dir_name();
-    char* cwd;
     if (cwd != nullptr) {
         cout << cwd << endl;
         free(cwd);
