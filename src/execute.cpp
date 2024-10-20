@@ -228,6 +228,10 @@ int main() {
 
                         args.push_back(nullptr); // Adds nullptr to back as needed
 
+                        if (has_and == 1) {
+                            setpgid(0, 0);
+                        }
+
                         execvp(args[0], args.data()); // Replaces current program with execvp
 
                     } else {
