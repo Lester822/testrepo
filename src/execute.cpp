@@ -25,7 +25,7 @@ void quexit_command() {
 }
 
 void pwd_command() {
-    // char* cwd = get_current_dir_name();
+    char* cwd = get_current_dir_name();
     char* cwd;
     if (cwd != nullptr) {
         cout << cwd << endl;
@@ -125,6 +125,7 @@ int main() {
                 // If last elem is a > it means output should go to file stored in commands[j+1]
                 // If last elem is a >> it means output should be appended to file stored in commands[j+1]
                 cout << last_elem;
+
                 if (last_elem == ">") {
                     fileOut.open(commands[j+1][0]);
                     // Redirecting cout to write to "output.txt"
@@ -174,8 +175,5 @@ int main() {
             }
             
         }
-
-
-        
     }
 }
