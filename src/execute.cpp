@@ -249,11 +249,13 @@ int main() {
                             dup2(devNullIn, STDIN_FILENO);
                             close(devNullIn);
 
-                            // Redirect stdout and stderr to /dev/null
-                            int devNullOut = open("/dev/null", O_WRONLY);
-                            dup2(devNullOut, STDOUT_FILENO);
-                            dup2(devNullOut, STDERR_FILENO);
-                            close(devNullOut);
+                            if (output_fd == -1) {
+                                // Redirect stdout and stderr to /dev/null only if not redirected elsewhere
+                                int devNullOut = open("/dev/null", O_WRONLY);
+                                dup2(devNullOut, STDOUT_FILENO);
+                                dup2(devNullOut, STDERR_FILENO);
+                                close(devNullOut);
+                            }
                         }
 
                         execvp(args[0], args.data()); // Replaces current program with execvp
