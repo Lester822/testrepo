@@ -38,9 +38,15 @@ int main() {
             if (prev == "") {
                 if (buffer[0] == '"') {
                     prev = buffer;
+                } else if (buffer == "<") {
+                    prev = "<";
                 } else {
                     command.push_back(buffer);
                 }
+
+            } else if (prev == "<") {
+                command.push_back("<" + buffer);
+                prev = "";
             } else {
                 prev = prev + " " + buffer;
                 if (buffer.back() == '"') {
@@ -71,7 +77,7 @@ int main() {
             // QUASH Command Mode
 
             if (command[0] == "echo") {
-                echo_command();
+                //echo_command();
             } else if (command[0] == "export") {
                 // DO A DIFFERENT THING
             } else if (command[0] == "cd") {
