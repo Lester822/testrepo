@@ -233,12 +233,14 @@ int main() {
                     } else {
                         if (has_and == 0) {
                             waitpid(pid, nullptr, 0);
+                            if (output_fd != -1) {
+                                close(output_fd);
+                            }
                         } else {
                             cout << "Process running in background with PID: " << pid << endl;
-                        }
-                        
-                        if (output_fd != -1) {
-                            close(output_fd);
+                            if (output_fd != -1) {
+                                close(output_fd);
+                            }
                         }
                     }
 
