@@ -138,7 +138,7 @@ int main() {
                 } else if (commands[j][0] == "cd") {
 
                 } else if (commands[j][0] == "pwd") {
-                    
+                    pwd_command();
                 } else if (commands[j][0] == "quit" || command[0] == "exit") {
                     quexit_command();
                 } else if (commands[j][0] == "jobs") {
