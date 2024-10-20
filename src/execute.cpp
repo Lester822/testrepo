@@ -3,6 +3,8 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <unistd.h>
+#include <stdlib.h>
 using namespace std;
 
 string check_string(string input) {
@@ -17,7 +19,21 @@ void echo_command(const vector<string> &args) {
     cout << args[args.size() - 1] << "\n";
 }
 
+void quexit_command() {
+    exit(0);
+}
+
+void pwd_command() {
+    char* cwd = get_current_dir_name();
+    if (cwd != nullptr) {
+        cout << cwd << endl;
+        free(cwd);
+    }
+    // Potential error handling location
+}
+
 int main() {
+    cout << "Welcome...";
     while (1) {
 
         // Get user input
@@ -79,7 +95,7 @@ int main() {
             } else if (command[0] == "pwd") {
                 
             } else if (command[0] == "quit" || command[0] == "exit") {
-                
+                quexit_command();
             } else if (command[0] == "jobs") {
                 
             }
