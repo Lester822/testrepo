@@ -230,6 +230,10 @@ int main() {
 
                         if (has_and == 1) {
                             setpgid(0, 0);
+
+                            int stopoutput = open("/dev/null", O_RDONLY);
+                            dup2(stopoutput, STDIN_FILENO);
+                            close(stopoutput);
                         }
 
                         execvp(args[0], args.data()); // Replaces current program with execvp
