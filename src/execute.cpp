@@ -24,9 +24,26 @@ string remove_quotes(const string& str) {
     return str;
 }
 
-string check_string(string input) {
-    // Function that returns the input string, unless the string is a system variable that should be replaced
-    return input;
+vector<string> convert_env_vars(const vector<string>& args) {
+    // Replaces environment variables in commands with their value as a string
+    vector<string> converted_args;
+
+    for (const string& arg : args) {
+        if (arg[0] == '$') {
+
+            string var_name = arg.substr(1);
+            const char* var_value = getenv(var_name.c_str());
+
+            if (var_value) {
+                converted_args.push_back(string(var_value));
+            } else {
+                converted_args.push_back("");
+            }
+        } else {
+            converted_args.push_back(arg);
+        }
+    }
+    return converted_args;
 }
 
 void echo_command(const vector<string>& args) {
@@ -36,17 +53,30 @@ void echo_command(const vector<string>& args) {
     cout << args[args.size() - 1] << "\n";
 }
 
-void quexit_command() {
-    exit(0);
-}
+void export_command(const vector<string>& args) {
 
-void pwd_command() {
-    char* cwd = get_current_dir_name();
-    if (cwd != nullptr) {
-        cout << cwd << endl;
-        free(cwd);
+    // If the command is missing
+    if (args.size() < 2) {
+        cout << "not enough arguements" << endl;
+        return;
+    }
+
+    string var = args[1];
+    int pos_of_equ = var.find('=');
+
+    string variable_name = var;
+    string variable_value = "";
+
+    if (pos_of_equ == string::npos) {
+        variable_name = var;
+        variable_value = "";
     } else {
-        cout << "getcwd failed" << endl;
+        variable_name = var.substr(0, pos_of_equ);
+        variable_value = var.substr(pos_of_equ + 1);
+    }
+
+    if (setenv(variable_name.c_str(), variable_value.c_str(), 1) != 0) {
+        cout << "export: failed to set variable " << variable_name << endl;
     }
 }
 
@@ -73,6 +103,24 @@ void cd_command(const vector<string>& args) {
     } else {
         cout << "failed to update PWD: " << endl;
     }
+}
+
+void pwd_command() {
+    char* cwd = get_current_dir_name();
+    if (cwd != nullptr) {
+        cout << cwd << endl;
+        free(cwd);
+    } else {
+        cout << "getcwd failed" << endl;
+    }
+}
+
+void quexit_command() {
+    exit(0);
+}
+
+void jobs_command() {
+    exit(0);
 }
 
 void sigchld_handler(int sig) {
@@ -199,17 +247,17 @@ int main() {
 
                 if (commands[j][0] == "echo") {
                     vector<string> temp_v(commands[j].begin() + 1, commands[j].end() - 1);
-                    echo_command(temp_v);
+                    echo_command(convert_env_vars(temp_v));
                 } else if (commands[j][0] == "export") {
-                    // DO A DIFFERENT THING
+                    export_command(convert_env_vars(commands[j]));
                 } else if (commands[j][0] == "cd") {
-                    cd_command(commands[j]);
+                    cd_command(convert_env_vars(commands[j]));
                 } else if (commands[j][0] == "pwd") {
                     pwd_command();
                 } else if (commands[j][0] == "quit" || command[0] == "exit") {
                     quexit_command();
                 } else if (commands[j][0] == "jobs") {
-                    
+                    jobs_command();
                 } else {
 
                     // SOLUTION FOR ">" and ">>" for these commands
