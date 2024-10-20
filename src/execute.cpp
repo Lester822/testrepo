@@ -128,19 +128,6 @@ void sigchld_handler(int sig) {
 }
 
 int main() {
-    signal(SIGTTOU, SIG_IGN);
-    signal(SIGTTIN, SIG_IGN);
-
-    // Set up the SIGCHLD handler
-    struct sigaction sa;
-    sa.sa_handler = sigchld_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_RESTART; // To restart interrupted system calls
-    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(1);
-    }
-
     cout << "Welcome..." << endl;
     while (1) {
 
@@ -196,14 +183,27 @@ int main() {
         // cout << "\nPRESPLIT VECTOR\n\n";
 
         for (int i = 0; i < command.size(); i++) {
-            temp_vector.push_back(command[i]);
-            if (command[i] == "|" || command[i] == ">" || command[i] == ">>") {
+            if (i == command.size()-1 && (command[i] == "&")) {
+                temp_vector.push_back("");
                 commands.push_back(temp_vector);
-                temp_vector.clear();
+                commands.push_back({"&"});
+            } else {
+                temp_vector.push_back(command[i]);
+                if (command[i] == "|" || command[i] == ">" || command[i] == ">>") {
+                    commands.push_back(temp_vector);
+                    temp_vector.clear();
+                }
             }
+            
         }
-        temp_vector.push_back("");
-        commands.push_back(temp_vector);
+        if (commands.empty()) {
+            temp_vector.push_back("");
+            commands.push_back(temp_vector);
+        } else if (commands[commands.size()-1] != vector<string>{"&"}) {
+            temp_vector.push_back("");
+            commands.push_back(temp_vector);
+        }
+        
 
         // cout << "COMMAND LIST START\n\n";
         // for (int j = 0; j < commands.size(); j++) {
@@ -274,8 +274,8 @@ int main() {
                     pid_t pid = fork(); // Fork process so that we can execvp the child
 
                     int has_and = 0;
-                    if (commands[j].size() > 2) {
-                        if (commands[j][commands[j].size()-2] == "&") {
+                    if (commands[j].size() >= 2) {
+                        if (commands.back()[0] == "&") {
                             has_and = 1;
                         }
                     }
@@ -289,18 +289,25 @@ int main() {
 
                         vector<char*> args; // Vector to hold command args
 
-                        for (int i = 0; i < commands[j].size()-(1 + has_and); i++) { // Assembles args argument by argument
+                        for (int i = 0; i < commands[j].size()-1; i++) { // Assembles args argument by argument
                             args.push_back(const_cast<char*>(commands[j][i].c_str())); // Converts the vector of strings into a vector of char* one element at a time
                         }
 
                         args.push_back(nullptr); // Adds nullptr to back as needed
 
                         if (has_and == 1) {
-                            setpgid(0, 0);
+                            // Redirect stdin to /dev/null
+                            int devNullIn = open("/dev/null", O_RDONLY);
+                            dup2(devNullIn, STDIN_FILENO);
+                            close(devNullIn);
 
-                            int stopoutput = open("/dev/null", O_RDONLY);
-                            dup2(stopoutput, STDIN_FILENO);
-                            close(stopoutput);
+                            if (output_fd == -1) {
+                                // Redirect stdout and stderr to /dev/null only if not redirected elsewhere
+                                int devNullOut = open("/dev/null", O_WRONLY);
+                                dup2(devNullOut, STDOUT_FILENO);
+                                dup2(devNullOut, STDERR_FILENO);
+                                close(devNullOut);
+                            }
                         }
 
                         execvp(args[0], args.data()); // Replaces current program with execvp
@@ -312,10 +319,15 @@ int main() {
                                 close(output_fd);
                             }
                         } else {
-                            cout << "Process running in background with PID: " << pid << endl;
                             if (output_fd != -1) {
                                 close(output_fd);
                             }
+                            if (last_elem == ">" || last_elem == ">>") {
+                            cout.rdbuf(og_output); // Restores cout to terminal
+                            fileOut.close();
+                            }
+                            cout << "Process running in background with PID: " << pid << endl;
+                            
                         }
                     }
 
