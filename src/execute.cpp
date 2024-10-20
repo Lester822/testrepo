@@ -41,7 +41,7 @@ void cd_command(const vector<string>& args) {
         const char* path = args[1].c_str();
 
         if (chdir(path) != 0) {
-            cout << "cd failed";
+            cout << "cd to" << path << " failed";
         }
         else {
             if (chdir(home) != 0) {
@@ -157,7 +157,7 @@ int main() {
                 } else if (commands[j][0] == "export") {
                     // DO A DIFFERENT THING
                 } else if (commands[j][0] == "cd") {
-
+                    cd_command(commands[j]);
                 } else if (commands[j][0] == "pwd") {
                     pwd_command();
                 } else if (commands[j][0] == "quit" || command[0] == "exit") {
