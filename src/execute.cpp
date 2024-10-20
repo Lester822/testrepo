@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 using namespace std;
 
 // Helper functions:
@@ -191,19 +192,53 @@ int main() {
                 } else if (commands[j][0] == "jobs") {
                     
                 } else {
-                    pid_t pid = fork();
-                    if (pid == 0) {
-                        vector<char*> args;
 
-                        for (int i = 0; i < commands[j].size()-1; i++) {
-                            args.push_back(const_cast<char*>(commands[j][i].c_str()));
-                        }
-                        args.push_back(nullptr);
+                    // SOLUTION FOR ">" and ">>" for these commands
 
-                        execvp(args[0], args.data());
-                    } else {
-                        waitpid(pid, nullptr, 0);
+                    ofstream fileOut;
+                    int output_fd = -1; // -1 indicates NO file output
+
+                    if (last_elem == ">") { // Open files
+                        output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
+                    } else if (last_elem == ">>") {
+                        output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
                     }
+
+                    pid_t pid = fork(); // Fork process so that we can execvp the child
+
+                    int has_and = 0;
+                    if (commands[j].size() > 2) {
+                        if (commands[j][commands[j].size()-2] == "&") {
+                            has_and = 1;
+                        }
+                    }
+                    
+                    if (pid == 0) {
+
+                        if (output_fd != -1) {
+                            dup2(output_fd, STDOUT_FILENO);
+                            close(output_fd);
+                        }
+
+                        vector<char*> args; // Vector to hold command args
+
+                        for (int i = 0; i < commands[j].size()-(1 + has_and); i++) { // Assembles args argument by argument
+                            args.push_back(const_cast<char*>(commands[j][i].c_str())); // Converts the vector of strings into a vector of char* one element at a time
+                        }
+
+                        args.push_back(nullptr); // Adds nullptr to back as needed
+
+                        execvp(args[0], args.data()); // Replaces current program with execvp
+
+                    } else {
+                        if (has_and == 0) {
+                            waitpid(pid, nullptr, 0);
+                        }
+                        if (output_fd != -1) {
+                            close(output_fd);
+                        }
+                    }
+
                     if (last_elem == ">" || last_elem == ">>") {
                         cout.rdbuf(og_output); // Restores cout to terminal
                         fileOut.close();
