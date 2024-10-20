@@ -3,12 +3,9 @@
 #include <iterator>
 #include <string>
 #include <vector>
-<<<<<<< HEAD
 #include <fstream>
-=======
 #include <unistd.h>
 #include <stdlib.h>
->>>>>>> 285ab1875758e6c498368d6e269f7c3842e48f3f
 using namespace std;
 
 string check_string(string input) {
