@@ -125,8 +125,6 @@ int main() {
                 cout << last_elem;
                 if (last_elem == ">") {
                     ofstream fileOut(commands[j+1][0]);
-
-<<<<<<< HEAD
                     // Redirecting cout to write to "output.txt"
                     cout.rdbuf(fileOut.rdbuf());
                 }
@@ -154,13 +152,12 @@ int main() {
 
                 // Fork this process
                 // Run execute command to replace it with what we want, passing in arguments with it
-=======
+                
             } else if (command[0] == "pwd") {
                 
             } else if (command[0] == "quit" || command[0] == "exit") {
                 quexit_command();
             } else if (command[0] == "jobs") {
->>>>>>> 285ab1875758e6c498368d6e269f7c3842e48f3f
                 
                 // Iterate through vector until we hit the end, a "|", or a ">"
                 // These indicate end of current command.
