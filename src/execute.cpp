@@ -41,15 +41,22 @@ void cd_command(const vector<string>& args) {
         const char* path = args[1].c_str();
 
         if (chdir(path) != 0) {
-            cout << "cd to" << path << " failed";
+            cout << "cd to" << path << " failed"; // Handle error locations
         }
         else {
             if (chdir(home) != 0) {
-                cout << "cd failed to change to home";
+                cout << "cd failed to change to home"; // Handle error locations
             }
         }
     }
     // Need an update to PWD?
+    char cwd[1024];
+    if (getcwd(cwd, size(cwd)) != nullptr) {
+        setenv("PWD", cwd, 1);
+    }
+    else {
+        cout << "failed to update PWD";
+    }
 }
 
 int main() {
