@@ -3,7 +3,12 @@
 #include <iterator>
 #include <string>
 #include <vector>
+<<<<<<< HEAD
 #include <fstream>
+=======
+#include <unistd.h>
+#include <stdlib.h>
+>>>>>>> 285ab1875758e6c498368d6e269f7c3842e48f3f
 using namespace std;
 
 string check_string(string input) {
@@ -18,7 +23,21 @@ void echo_command(const vector<string> &args) {
     cout << args[args.size() - 1] << "\n";
 }
 
+void quexit_command() {
+    exit(0);
+}
+
+void pwd_command() {
+    char* cwd = get_current_dir_name();
+    if (cwd != nullptr) {
+        cout << cwd << endl;
+        free(cwd);
+    }
+    // Potential error handling location
+}
+
 int main() {
+    cout << "Welcome...";
     while (1) {
 
         // Get user input
@@ -110,6 +129,7 @@ int main() {
                 if (last_elem == ">") {
                     ofstream fileOut(commands[j+1][0]);
 
+<<<<<<< HEAD
                     // Redirecting cout to write to "output.txt"
                     cout.rdbuf(fileOut.rdbuf());
                 }
@@ -137,6 +157,13 @@ int main() {
 
                 // Fork this process
                 // Run execute command to replace it with what we want, passing in arguments with it
+=======
+            } else if (command[0] == "pwd") {
+                
+            } else if (command[0] == "quit" || command[0] == "exit") {
+                quexit_command();
+            } else if (command[0] == "jobs") {
+>>>>>>> 285ab1875758e6c498368d6e269f7c3842e48f3f
                 
                 // Iterate through vector until we hit the end, a "|", or a ">"
                 // These indicate end of current command.
