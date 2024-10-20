@@ -131,14 +131,27 @@ int main() {
         // cout << "\nPRESPLIT VECTOR\n\n";
 
         for (int i = 0; i < command.size(); i++) {
-            temp_vector.push_back(command[i]);
-            if (command[i] == "|" || command[i] == ">" || command[i] == ">>") {
+            if (i == command.size()-1 && (command[i] == "&")) {
+                temp_vector.push_back("");
                 commands.push_back(temp_vector);
-                temp_vector.clear();
+                commands.push_back({"&"});
+            } else {
+                temp_vector.push_back(command[i]);
+                if (command[i] == "|" || command[i] == ">" || command[i] == ">>") {
+                    commands.push_back(temp_vector);
+                    temp_vector.clear();
+                }
             }
+            
         }
-        temp_vector.push_back("");
-        commands.push_back(temp_vector);
+        if (commands.empty()) {
+            temp_vector.push_back("");
+            commands.push_back(temp_vector);
+        } else if (commands[commands.size()-1] != vector<string>{"&"}) {
+            temp_vector.push_back("");
+            commands.push_back(temp_vector);
+        }
+        
 
         // cout << "COMMAND LIST START\n\n";
         // for (int j = 0; j < commands.size(); j++) {
@@ -210,7 +223,7 @@ int main() {
 
                     int has_and = 0;
                     if (commands[j].size() > 2) {
-                        if (commands[j][commands[j].size()-2] == "&") {
+                        if (commands.back() == vector<string>{"&"}) {
                             has_and = 1;
                         }
                     }
@@ -224,7 +237,7 @@ int main() {
 
                         vector<char*> args; // Vector to hold command args
 
-                        for (int i = 0; i < commands[j].size()-(1 + has_and); i++) { // Assembles args argument by argument
+                        for (int i = 0; i < commands[j].size()-1; i++) { // Assembles args argument by argument
                             args.push_back(const_cast<char*>(commands[j][i].c_str())); // Converts the vector of strings into a vector of char* one element at a time
                         }
 
