@@ -270,6 +270,10 @@ int main() {
                             if (output_fd != -1) {
                                 close(output_fd);
                             }
+                            if (last_elem == ">" || last_elem == ">>") {
+                            cout.rdbuf(og_output); // Restores cout to terminal
+                            fileOut.close();
+                            }
                             cout << "Process running in background with PID: " << pid << endl;
                             
                         }
