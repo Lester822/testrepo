@@ -212,188 +212,135 @@ int main() {
         // cout << "COMMAND LIST END\n\n";
         // Need to combine terms that are part of a single set of quotation marks
         // Need to merge "<" with next term
-        
+        vector<pid_t> child_pids;
+
+        // Prepare previous pipe file descriptors
+        int prev_pipe_fd[2] = { -1, -1 };
 
         // Basic Cases
         for (int j = 0; j < commands.size(); j++) { // For each command
 
             if (commands[j].size() != 0) { // Make sure it's not an empty command (EDGE CASE)
-                
-                string last_elem = commands[j][commands[j].size()-1] ;
-                ofstream fileOut;
-                streambuf* og_output = cout.rdbuf(); // Stores original cout (to terminal)
-                // If last elem is a "" it means standard operation, and final command
-                // If last elem is a | it means the output should be piped
-                // If last elem is a > it means output should go to file stored in commands[j+1]
-                // If last elem is a >> it means output should be appended to file stored in commands[j+1]
 
-                if (last_elem == ">") {
-                    fileOut.open(commands[j+1][0]);
-                    // Redirecting cout to write to "output.txt"
-                    cout.rdbuf(fileOut.rdbuf());
-                }
+                string last_elem = commands[j][commands[j].size() - 1];
+                bool has_next_pipe = (last_elem == "|");
+                int pipe_fd[2];
 
-                if (last_elem == ">>") {
-                    fileOut.open(commands[j+1][0], ios::app);
-                    // Redirecting cout to write to "output.txt"
-                    cout.rdbuf(fileOut.rdbuf());
-                }
+                // Handle built-in commands without piping
+                if (commands[j][0] == "echo" || commands[j][0] == "export" || commands[j][0] == "cd" ||
+                    commands[j][0] == "pwd" || commands[j][0] == "quit" || commands[j][0] == "exit" ||
+                    commands[j][0] == "jobs") {
 
-                // QUASH Command Mode
+                    if (prev_pipe_fd[0] != -1 || has_next_pipe) {
+                        cout << "Error: Built-in commands cannot be used with pipes." << endl;
+                        break;
+                    }
 
-                if (commands[j][0] == "echo") {
-                    vector<string> temp_v(commands[j].begin() + 1, commands[j].end() - 1);
-                    echo_command(convert_env_vars(temp_v));
-                } else if (commands[j][0] == "export") {
-                    export_command(convert_env_vars(commands[j]));
-                } else if (commands[j][0] == "cd") {
-                    cd_command(convert_env_vars(commands[j]));
-                } else if (commands[j][0] == "pwd") {
-                    pwd_command();
-                } else if (commands[j][0] == "quit" || command[0] == "exit") {
-                    quexit_command();
-                } else if (commands[j][0] == "jobs") {
-                    jobs_command();
+                    if (commands[j][0] == "echo") {
+                        vector<string> temp_v(commands[j].begin() + 1, commands[j].end() - 1);
+                        echo_command(convert_env_vars(temp_v));
+                    } else if (commands[j][0] == "export") {
+                        export_command(convert_env_vars(commands[j]));
+                    } else if (commands[j][0] == "cd") {
+                        cd_command(convert_env_vars(commands[j]));
+                    } else if (commands[j][0] == "pwd") {
+                        pwd_command();
+                    } else if (commands[j][0] == "quit" || commands[j][0] == "exit") {
+                        quexit_command();
+                    } else if (commands[j][0] == "jobs") {
+                        jobs_command();
+                    }
+
                 } else {
+                    // External Commands
 
-                    // SOLUTION FOR ">" and ">>" for these commands
-
-                    ofstream fileOut;
-                    int output_fd = -1; // -1 indicates NO file output
-
-
-                    // Set output
-
-                    if (last_elem == ">") { // Open files
-                        output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
-                    } else if (last_elem == ">>") {
-                        output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
-                    } else if (last_elem == "|") {
-                        // If this command should pipe input
-                        
-                        //dup2()
-                    }
-
-                    // If previous command was piping
-
-                    if (j > 0) {
-                        if (commands[j-1].back() == "|") {
-                            //dup2
-                        }
-                    }
-
-                    int pipe_fd[2];
-                    if (last_elem == "|" || (j > 0 && commands[j - 1].back() == "|")) {
+                    if (has_next_pipe) {
                         pipe(pipe_fd);
                     }
 
-                    pid_t pid = fork(); // Fork process so that we can execvp the child
+                    pid_t pid = fork();
 
-                    int has_and = 0;
-                    if (commands[j].size() >= 2) {
-                        if (commands.back()[0] == "&") {
-                            has_and = 1;
-                        }
-                    }
-                    
                     if (pid == 0) {
-                        if (last_elem == "|") {
-                            // Redirect output to the pipe
+                        // Child process
+
+                        // Handle input from previous pipe
+                        if (prev_pipe_fd[0] != -1) {
+                            dup2(prev_pipe_fd[0], STDIN_FILENO);
+                        }
+
+                        // Handle output to next pipe
+                        if (has_next_pipe) {
                             dup2(pipe_fd[1], STDOUT_FILENO);
+                        }
+
+                        // Close unused FDs
+                        if (prev_pipe_fd[0] != -1) {
+                            close(prev_pipe_fd[0]);
+                            close(prev_pipe_fd[1]);
+                        }
+                        if (has_next_pipe) {
                             close(pipe_fd[0]);
                             close(pipe_fd[1]);
                         }
 
-                        if (j > 0 && commands[j - 1].back() == "|") {
-                            // Redirect input from the pipe
-                            dup2(pipe_fd[0], STDIN_FILENO);
-                            close(pipe_fd[0]);
-                            close(pipe_fd[1]);
-                        }
-
-                        if (output_fd != -1) {
-                            dup2(output_fd, STDOUT_FILENO);
-                            close(output_fd);
-                        }
-
-                        vector<char*> args; // Vector to hold command args
-
-                        for (int i = 0; i < commands[j].size()-1; i++) { // Assembles args argument by argument
-                            args.push_back(const_cast<char*>(commands[j][i].c_str())); // Converts the vector of strings into a vector of char* one element at a time
-                        }
-
-                        args.push_back(nullptr); // Adds nullptr to back as needed
-
-                        if (has_and == 1) {
-                            // Redirect stdin to /dev/null
-                            int devNullIn = open("/dev/null", O_RDONLY);
-                            dup2(devNullIn, STDIN_FILENO);
-                            close(devNullIn);
-
+                        // Handle output redirection to file if necessary
+                        int output_fd = -1;
+                        if (last_elem == ">" || last_elem == ">>") {
+                            string outfile = commands[j + 1][0];
+                            if (last_elem == ">") {
+                                output_fd = open(outfile.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
+                            } else if (last_elem == ">>") {
+                                output_fd = open(outfile.c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
+                            }
                             if (output_fd == -1) {
-                                // Redirect stdout and stderr to /dev/null only if not redirected elsewhere
-                                int devNullOut = open("/dev/null", O_WRONLY);
-                                dup2(devNullOut, STDOUT_FILENO);
-                                dup2(devNullOut, STDERR_FILENO);
-                                close(devNullOut);
+                                perror("open");
+                                exit(EXIT_FAILURE);
                             }
+                            dup2(output_fd, STDOUT_FILENO);
                         }
 
-                        execvp(args[0], args.data()); // Replaces current program with execvp
+                        // Prepare arguments
+                        vector<string> cmd_args = commands[j];
+                        // Remove last element if it's "|", ">", ">>"
+                        if (last_elem == "|" || last_elem == ">" || last_elem == ">>") {
+                            cmd_args.pop_back();
+                        }
+                        vector<char*> args;
+                        for (size_t i = 0; i < cmd_args.size(); ++i) {
+                            args.push_back(const_cast<char*>(cmd_args[i].c_str()));
+                        }
+                        args.push_back(nullptr);
 
+                        execvp(args[0], args.data());
+                        perror("execvp");
+                        exit(EXIT_FAILURE);
                     } else {
-                        if (has_and == 0) {
-                            waitpid(pid, nullptr, 0);
-                            if (last_elem == "|" || (j > 0 && commands[j - 1].back() == "|")) {
-                                close(pipe_fd[0]);
-                                close(pipe_fd[1]);
-                            }
-                            if (output_fd != -1) {
-                                close(output_fd);
-                            }
-                        } else {
-                            if (last_elem == "|" || (j > 0 && commands[j - 1].back() == "|")) {
-                                close(pipe_fd[0]);
-                                close(pipe_fd[1]);
-                            }
-                            if (output_fd != -1) {
-                                close(output_fd);
-                            }
-                            if (last_elem == ">" || last_elem == ">>") {
-                            cout.rdbuf(og_output); // Restores cout to terminal
-                            fileOut.close();
-                            }
-                            cout << "Process running in background with PID: " << pid << endl;
-                            
+                        // Parent process
+                        child_pids.push_back(pid);
+
+                        // Close unused FDs
+                        if (prev_pipe_fd[0] != -1) {
+                            close(prev_pipe_fd[0]);
+                            close(prev_pipe_fd[1]);
                         }
-                        
+
+                        // Update prev_pipe_fd
+                        if (has_next_pipe) {
+                            prev_pipe_fd[0] = pipe_fd[0];
+                            prev_pipe_fd[1] = pipe_fd[1];
+                        } else {
+                            prev_pipe_fd[0] = -1;
+                            prev_pipe_fd[1] = -1;
+                        }
                     }
-
-                    
                 }
-
-                // Execution Mode
-
-                // Fork this process
-                // Run execute command to replace it with what we want, passing in arguments with it
-
-                if (last_elem == ">" || last_elem == ">>") {
-                    cout.rdbuf(og_output); // Restores cout to terminal
-                    fileOut.close();
-                }
-                if (last_elem != "|") {
-                    break;
-                }
-                
-                // Iterate through vector until we hit the end, a "|", or a ">"
-                // These indicate end of current command.
-                // If we hit the end of the vector then we just need to run the command and then return to QUASH
-                // If we hit a "|" we need to pipe the output
-                // If we hit a ">" we need to put the output in a file
-
-
             }
-
         }
+
+        // After setting up all pipelines, wait for all child processes
+        for (pid_t pid : child_pids) {
+            waitpid(pid, nullptr, 0);
+        }
+
     }
 }
