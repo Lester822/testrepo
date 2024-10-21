@@ -227,27 +227,40 @@ int main() {
 
                 // Handle output redirection to files
                 if (last_elem == ">") {
-                    output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
-                    if (output_fd == -1) {
-                        perror("open");
+                    if (j + 1 < commands.size()) {
+                        string filename = commands[j + 1][0];
+                        output_fd = open(filename.c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
+                        if (output_fd == -1) {
+                            perror("open");
+                            continue;
+                        }
+                        commands[j].pop_back(); // Remove the operator
+                        commands.erase(commands.begin() + j + 1); // Remove the filename from commands
+                        num_commands -= 1;
+                    } else {
+                        cout << "Error: No file specified for output redirection." << endl;
                         continue;
                     }
-                    commands[j].pop_back(); // Remove the operator
-                    commands.erase(commands.begin() + j + 1); // Remove the filename from commands
-                    num_commands -= 1;
                 } else if (last_elem == ">>") {
-                    output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
-                    if (output_fd == -1) {
-                        perror("open");
+                    if (j + 1 < commands.size()) {
+                        string filename = commands[j + 1][0];
+                        output_fd = open(filename.c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
+                        if (output_fd == -1) {
+                            perror("open");
+                            continue;
+                        }
+                        commands[j].pop_back(); // Remove the operator
+                        commands.erase(commands.begin() + j + 1); // Remove the filename from commands
+                        num_commands -= 1;
+                    } else {
+                        cout << "Error: No file specified for output redirection." << endl;
                         continue;
                     }
-                    commands[j].pop_back(); // Remove the operator
-                    commands.erase(commands.begin() + j + 1); // Remove the filename from commands
-                    num_commands -= 1;
                 }
 
                 // Remove the last element if it's an operator (already handled)
-                if (last_elem == "" || last_elem == "|" || last_elem == ">" || last_elem == ">>") {
+                if (last_elem == "|" || last_elem == ">" || last_elem == ">>") {
+                    // Operator already handled, remove it
                     commands[j].pop_back();
                 }
 
@@ -299,7 +312,7 @@ int main() {
                             perror("dup2");
                             exit(EXIT_FAILURE);
                         }
-                        close(output_fd);
+                        // No need to close output_fd here since it will be closed when the process exits
                     }
 
                     // Close all pipe file descriptors in the child
