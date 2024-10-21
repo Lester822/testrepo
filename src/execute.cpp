@@ -123,6 +123,10 @@ void jobs_command() {
     exit(0);
 }
 
+void sigchld_handler(int sig) {
+    while (waitpid(-1, NULL, WNOHANG) > 0);
+}
+
 int main() {
     cout << "Welcome..." << endl;
     while (1) {
@@ -261,30 +265,10 @@ int main() {
                     ofstream fileOut;
                     int output_fd = -1; // -1 indicates NO file output
 
-
-                    // Set output
-
                     if (last_elem == ">") { // Open files
                         output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_TRUNC, 0644);
                     } else if (last_elem == ">>") {
                         output_fd = open(commands[j + 1][0].c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
-                    } else if (last_elem == "|") {
-                        // If this command should pipe input
-                        
-                        //dup2()
-                    }
-
-                    // If previous command was piping
-
-                    if (j > 0) {
-                        if (commands[j-1].back() == "|") {
-                            //dup2
-                        }
-                    }
-
-                    int pipe_fd[2];
-                    if (last_elem == "|" || (j > 0 && commands[j - 1].back() == "|")) {
-                        pipe(pipe_fd);
                     }
 
                     pid_t pid = fork(); // Fork process so that we can execvp the child
@@ -297,19 +281,6 @@ int main() {
                     }
                     
                     if (pid == 0) {
-                        if (last_elem == "|") {
-                            // Redirect output to the pipe
-                            dup2(pipe_fd[1], STDOUT_FILENO);
-                            close(pipe_fd[0]);
-                            close(pipe_fd[1]);
-                        }
-
-                        if (j > 0 && commands[j - 1].back() == "|") {
-                            // Redirect input from the pipe
-                            dup2(pipe_fd[0], STDIN_FILENO);
-                            close(pipe_fd[0]);
-                            close(pipe_fd[1]);
-                        }
 
                         if (output_fd != -1) {
                             dup2(output_fd, STDOUT_FILENO);
@@ -357,10 +328,6 @@ int main() {
                             }
                             cout << "Process running in background with PID: " << pid << endl;
                             
-                        }
-                        if (last_elem == "|" || (j > 0 && commands[j - 1].back() == "|")) {
-                                close(pipe_fd[0]);
-                                close(pipe_fd[1]);
                         }
                     }
 
